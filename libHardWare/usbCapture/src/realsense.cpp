@@ -12,9 +12,12 @@ int RealsenseInterface::init(){
     cfg_color.enable_stream(RS2_STREAM_COLOR, color_img_width, color_img_height, RS2_FORMAT_BGR8, 60); //设置color stream 
     rs2::config cfg_depth; //新建config类的对象 for depth img
     cfg_depth.enable_stream(RS2_STREAM_DEPTH, depth_img_width, depth_img_height, RS2_FORMAT_Z16, 60);  //depth stream
-    pipe_color.start(cfg_color);
+    auto profile= pipe_color.start(cfg_color);
     pipe_depth.start(cfg_depth);
-    
+    //将preset设置成High Accuracy
+    auto sensor=profile.get_device().first<rs2::depth_sensor>();
+    sensor.set_option(rs2_option::RS2_OPTION_VISUAL_PRESET,rs2_rs400_visual_preset::RS2_RS400_VISUAL_PRESET_HIGH_ACCURACY);
+
     spat.set_option(RS2_OPTION_HOLES_FILL, 5);
     
     
@@ -68,10 +71,10 @@ int RealsenseInterface::readDepthImg(){
         //             .apply_filter(depth2disparity)
         //             .apply_filter(spat)
                     //depth_data.apply_filter(color_map);
-        rs2::frame depth = depth_data.get_depth_frame().apply_filter(spat);
+        rs2::frame depth = depth_data.get_depth_frame().apply_filter(color_map);
         const int w = depth.as<rs2::video_frame>().get_width();
         const int h = depth.as<rs2::video_frame>().get_height();
-        Mat depth_tmp(Size(w, h),CV_16UC1,(void*)depth.get_data(),Mat::AUTO_STEP);
+        Mat depth_tmp(Size(w, h),CV_8UC3,(void*)depth.get_data(),Mat::AUTO_STEP);
         cv::resize(depth_tmp,depth_tmp,cv::Size(depth_img_width,depth_img_height));
         // cv::cvtColor(depth_tmp,depth_tmp,CV_RGB2GRAY);
         // for (int i = 0; i < depth_tmp.rows; ++i) {

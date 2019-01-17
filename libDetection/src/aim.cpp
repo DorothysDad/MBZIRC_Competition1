@@ -29,8 +29,8 @@ Point3f Aim_ball::getDistance(Mat depth){
         }
     }
     distance.z = float(depth.at<ushort>(a,b));
-    distance.x = b - depth.cols/2;
-    distance.y = a - depth.rows/2;
+    distance.x = b ;//- depth.cols/2;
+    distance.y = a ;//- depth.rows/2;
     return distance;
 }
 
